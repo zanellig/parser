@@ -381,7 +381,7 @@ type CanvasState = Array<Array<number>>
 class CanvasController {
     static #instance: CanvasController | null = null
     #penCoords: Coords2D    =   { x: 0, y: 0 }
-    #canvas:    CanvasState =   [[0,0,0],[0,0,0],[0,0,0]]
+    #canvas:    CanvasState =   []
     #dims:      Dimensions  =   { width: 0, height: 0 }
 
     private constructor() {}
@@ -401,13 +401,42 @@ class CanvasController {
             checkValidPositiveNumberParameter(width)
             checkValidPositiveNumberParameter(height)
         } catch (e) {
+            if (Number.isNaN(width) && Number.isNaN(height)) throw new InvalidRequestedDimensionsError(`
+            Canvas dimensions are required. 
+            Please provide them as flags with --width / --height (or their shorthand alternatives).
+            `)
             throw new InvalidRequestedDimensionsError(`Requested dimensions "width = ${width}" and "height = ${height}" are invalid.`)
         }
+        this.#dims.width    = width
+        this.#dims.height   = height
+        this.#populateCanvas()
+    }
+
+    #populateCanvas() {
+        if (this.#canvas.length > 0) return this.#canvas
+        let rows = 0
+        while (rows < this.#dims.height) {
+            const colArr = new Array(this.#dims.width)
+            colArr.fill(0)
+            this.#canvas.push(colArr)
+            rows++
+        }
+        return this.#canvas
     }
     /** @throws { InvalidActionSequence } */
     perform(actions: Action[]) {}
     performSingle(action: Action) {}
-    paint() {}
+    paint() {
+        const pixels = ["░░", "▓▓", "██"]
+
+        for(const row of this.#canvas) {
+            let line = ""
+            for (const col of row) {
+                line += pixels[col] ?? "??"
+            }
+            console.log(line)
+        }
+    }
 }
 
 /**
@@ -452,6 +481,7 @@ async function main() {
         height: args.get("height")?.param
     }
     canvas.requestCanvas(requestedDimensions)
+    canvas.paint()
 }
 
 main()
