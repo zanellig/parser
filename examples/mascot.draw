@@ -1,0 +1,55 @@
+# Claude Code mascot on a 40x30 canvas
+# Square head with two eyes, a smile, and a sparkle above.
+
+# Walk pen up to head bottom-left (8,4)
+N 4
+E 8
+
+# Head outline
+P 2
+D
+E 23
+N 21
+W 23
+S 21
+U
+
+# Left eye, 2x2 solid at (14,18)
+E 6
+N 14
+D
+E 1
+N 1
+W 1
+S 1
+U
+
+# Right eye, 2x2 solid at (24,18)
+E 10
+D
+E 1
+N 1
+W 1
+S 1
+U
+
+# Smile, centered, with upturned corners
+S 7
+W 9
+D
+S 1
+E 9
+N 2
+U
+
+# Sparkle above head, a 4-point cross at (19,27)
+N 14
+W 5
+D
+N 3
+U
+S 2
+W 1
+D
+E 3
+U
