@@ -104,12 +104,6 @@ type Actions = {
     "U":    Action
 }
 
-interface PreparsedParts extends Object {
-    a: string | undefined
-    s: string | undefined
-    n: string | undefined
-}
-
 enum HumanReadableActions {
     "P" = "select_pen",
     "D" = "pen_down",
@@ -125,14 +119,20 @@ class ActionParser {
 
     constructor(lines: Array<string>) {
         for (const line of lines) {
-            const parts: PreparsedParts = { a: line[0], s: line[1], n: line[2] }
-            if (!parts.a) continue
-            if (parts.s !== " ") {
-                delete parts.s
-                delete parts.n
-            }
-            console.log(parts)
+            let tokens = line.split("")
+            if (tokens.length === 0) continue
+            const comment = this.#findComment(tokens)
+            if (comment.found) tokens.splice(comment.idx!) // array brutality
+            
+
+            console.log(tokens, tokens.length)
         }
+    }
+
+    #findComment(tokens: Array<string>) {
+        const commentIdx = tokens.findIndex((v) => v === "#")
+        const hasComment = commentIdx > -1
+        return {idx: hasComment ? commentIdx : null, found: hasComment}
     }
 
     #parseNumber() {}
