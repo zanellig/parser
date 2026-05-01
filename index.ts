@@ -328,7 +328,7 @@ class ActionParser {
         const action = actionToken.value
         switch (action) {
             case ActionTokens.selectPen:
-                const param = this.#readNumberParameter(actionToken, parameterToken)
+                const param = this.#readNumberParameter(actionToken, parameterToken, { allowZero: true })
                 return { actionName: ActionNameByToken[action], param }
             case ActionTokens.penDown:
             case ActionTokens.penUp:
@@ -347,13 +347,15 @@ class ActionParser {
         }
     }
 
-    #readNumberParameter(actionToken: LexicalToken, parameterToken: LexicalToken | undefined) {
+    #readNumberParameter(actionToken: LexicalToken, parameterToken: LexicalToken | undefined, options: { allowZero?: boolean } = {}) {
+        const expected = options.allowZero ? "non-negative" : "positive"
         if (!parameterToken || parameterToken.type !== "NUMBER") {
-            throw new InvalidActionParameterError(this.#formatTokenError(parameterToken ?? actionToken, `Action "${actionToken.value}" requires a positive integer parameter`))
+            throw new InvalidActionParameterError(this.#formatTokenError(parameterToken ?? actionToken, `Action "${actionToken.value}" requires a ${expected} integer parameter`))
         }
 
         const number = Number(parameterToken.value)
-        if (!isValidPositiveInteger(number)) {
+        const valid = options.allowZero ? isValidNonNegativeInteger(number) : isValidPositiveInteger(number)
+        if (!valid) {
             throw new InvalidActionParameterError(this.#formatTokenError(parameterToken, `Invalid numeric parameter "${parameterToken.value}"`))
         }
 
@@ -536,6 +538,16 @@ function isValidPositiveInteger(np: number) {
         Number.isSafeInteger(np) &&
         Number.isInteger(np) &&
         np > 0
+    )
+}
+
+function isValidNonNegativeInteger(np: number) {
+    return (
+        !Number.isNaN(np) &&
+        Number.isFinite(np) &&
+        Number.isSafeInteger(np) &&
+        Number.isInteger(np) &&
+        np >= 0
     )
 }
 
