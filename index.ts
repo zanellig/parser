@@ -79,29 +79,51 @@ class ArgumentReader {
             return this.#parsed.find((v) => v.flagName === arg)
         }
     }
-    
-class InvalidParsedNumber extends Error {}
+
+class ParsingError extends Error {}
+class InvalidActionParameterError extends ParsingError {}
 
 interface Action extends Object {
-    actionName: HumanReadableActions
+    actionName: string
 }
+
+class Action implements Action {}
 
 interface RepeateableAction extends Action {
     reps: number
 }
 
+class RepeateableAction implements RepeateableAction {}
+
 interface ParameterizableAction extends Action {
     param: number
 }
 
-type Actions = {
-    "P":    ParameterizableAction
-    "D":    Action
-    "N":    RepeateableAction
-    "S":    RepeateableAction
-    "E":    RepeateableAction
-    "W":    RepeateableAction
-    "U":    Action
+class ParameterizableAction implements ParameterizableAction {}
+
+type Actions = Action | ParameterizableAction | RepeateableAction
+
+// type Actions = {
+//     "P":    ParameterizableAction
+//     "D":    Action
+//     "N":    RepeateableAction
+//     "S":    RepeateableAction
+//     "E":    RepeateableAction
+//     "W":    RepeateableAction
+//     "U":    Action
+// }
+
+/**
+ * Enums in TypeScript are BULLSHIT and I hate them
+ */
+enum TokenActions {
+    "select_pen"    = "P",
+    "pen_down"      = "D",
+    "move_north"    = "N",
+    "move_south"    = "S",
+    "move_east"     = "E",
+    "move_west"     = "W",
+    "pen_up"        = "U",
 }
 
 enum HumanReadableActions {
@@ -111,21 +133,48 @@ enum HumanReadableActions {
     "S" = "move_south",
     "E" = "move_east",
     "W" = "move_west",
-    "U" = "pen_up"
+    "U" = "pen_up",
 }
 
 class ActionParser {
     #actions: Array<Actions> = []
+    #validActions: Array<TokenActions> = [
+        TokenActions.select_pen,
+        TokenActions.pen_down,
+        TokenActions.move_north,
+        TokenActions.move_south,
+        TokenActions.move_east,
+        TokenActions.move_west,
+        TokenActions.pen_up
+    ]
 
     constructor(lines: Array<string>) {
-        for (const line of lines) {
+        for (let i = 0; i < lines.length; i++) {
+            const cefl = i+1 // current effective line (what shows up in text editors)
+            const line = lines[i]
             let tokens = line.split("")
             if (tokens.length === 0) continue
             const comment = this.#findComment(tokens)
             if (comment.found) tokens.splice(comment.idx!) // array brutality
-            
 
-            console.log(tokens, tokens.length)
+            for (let pointer = 0; pointer < tokens.length; pointer++) {
+                if (!this.#validActions.includes(tokens[pointer] as TokenActions)) {
+                    continue
+                }
+                let action
+                try {
+                    action = this.#mapAction(tokens[pointer], tokens[pointer+2])
+                } catch (e) {
+                    if (e instanceof InvalidActionParameterError) {
+                        console.log(`[line] ${line}`)
+                        console.error(`[ERROR on ${cefl}:${pointer}] The parameter "${tokens[pointer+2]}" is not assignable to action "${tokens[pointer]}"`)
+                        throw e
+                    }
+                }
+                if (!action) continue // this will never happen, but I don't want to fight the type checker
+                this.#actions.push(action)
+                break
+            }
         }
     }
 
@@ -135,7 +184,40 @@ class ActionParser {
         return {idx: hasComment ? commentIdx : null, found: hasComment}
     }
 
-    #parseNumber() {}
+    /**
+     * @throws { InvalidActionParameterError }
+     */
+    #mapAction(action: string, nextValidToken: string | undefined): Actions | void {
+        const number = Number(nextValidToken)
+        switch (action) {
+            case "P":
+                this.#checkValidNumberParameter(number)
+                return { actionName: action, param: number }
+            case "D":
+            case "U":
+                return { actionName: action }
+            case "N":
+            case "S":
+            case "E":
+            case "W":
+                this.#checkValidNumberParameter(number)
+                return { actionName: action, reps: number }
+        }
+    }
+
+    /**
+     * @throws { InvalidActionParameterError }
+     */
+    #checkValidNumberParameter(np: number) {
+        if (
+            !np || 
+            Number.isNaN(np) || 
+            !Number.isFinite(np) || 
+            !Number.isSafeInteger(np) ||
+            !Number.isInteger(np) ||
+            np < 0
+        ) throw new InvalidActionParameterError
+    }
 
     /** Este getter es al pedo por ahora, pero bueno */
     get actions() {
@@ -158,8 +240,8 @@ async function main() {
     )
     const lines = file.split("\n")
 
-    const lineParser = new ActionParser(lines)
-    
+    const actionParser = new ActionParser(lines)
+    console.log(actionParser.actions)
 }
 
 main()
