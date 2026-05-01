@@ -6,9 +6,6 @@
 	"author": "zanellig",
 	"type": "module",
 	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
 	"module": "index.ts",
 	"devDependencies": {
 		"@types/node": "^25.6.0"

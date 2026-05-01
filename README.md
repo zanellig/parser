@@ -9,7 +9,8 @@ npm install
 To run:
 
 ```bash
+node --experimental-transform-types index.ts --path "test_script.draw"
 npm run index.ts --path [*.draw]
 ```
 
-This project was created using `bun init` in bun v1.3.11. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+No AI agent was used to code this project
