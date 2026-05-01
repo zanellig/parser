@@ -113,9 +113,7 @@ type Actions = Action | ParameterizableAction | RepeateableAction
 //     "U":    Action
 // }
 
-/**
- * Enums in TypeScript are BULLSHIT and I hate them
- */
+/* Enums in TypeScript are BULLSHIT and I hate them :) */
 enum TokenActions {
     "select_pen"    = "P",
     "pen_down"      = "D",
@@ -224,8 +222,6 @@ class ActionParser {
     }
 }
 
-// {action}{space}{number}
-
 async function main() {
     const args = new ArgumentReader(process.argv)
     const pathFlag = args.get("path") as ParamFlag
@@ -240,7 +236,8 @@ async function main() {
     const lines = file.split("\n")
 
     const actionParser = new ActionParser(lines)
-    console.log(actionParser.actions)
+    const actions = actionParser.actions
+    // TODO: aca tendria que implementar un CanvasController o algo asi
 }
 
 main()
