@@ -1,0 +1,55 @@
+# Concentric squares target on a 50x50 canvas
+# Now using pens 0, 1, and 2 for three distinct shades.
+
+# Ring 1: outermost, pen 2 (full)
+P 2
+D
+E 49
+N 49
+W 49
+S 49
+U
+
+# Ring 2: pen 1 (medium)
+N 5
+E 5
+P 1
+D
+E 39
+N 39
+W 39
+S 39
+U
+
+# Ring 3: pen 0 (light)
+N 5
+E 5
+P 0
+D
+E 29
+N 29
+W 29
+S 29
+U
+
+# Ring 4: pen 1 (medium)
+N 5
+E 5
+P 1
+D
+E 19
+N 19
+W 19
+S 19
+U
+
+# Ring 5: innermost, pen 2 (full)
+N 5
+E 5
+P 2
+D
+E 9
+N 9
+W 9
+S 9
+U
