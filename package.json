@@ -5,9 +5,15 @@
 	"license": "MIT",
 	"author": "zanellig",
 	"type": "module",
-	"main": "index.js",
-	"module": "index.ts",
+	"main": "./src/index.ts",
+	"module": "./src/index.ts",
+	"scripts": {
+		"start": "node --experimental-transform-types src/cli/main.ts",
+		"test": "node --test --experimental-transform-types test/*.test.ts",
+		"typecheck": "tsc --noEmit"
+	},
 	"devDependencies": {
-		"@types/node": "^25.6.0"
+		"@types/node": "^25.6.0",
+		"typescript": "^5.9.3"
 	}
 }

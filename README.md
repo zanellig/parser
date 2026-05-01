@@ -2,7 +2,9 @@
 
 Minimal parser and renderer for `.draw` files.
 
-All code was written by hand. Help from GPT-5.5 was used on the Lexer and writing this docs!
+Core code was written by hand.
+
+Help from GPT-5.5 was used on the lexer, refactoring into an extendable structure, and writing these docs!
 
 To install dependencies:
 
@@ -10,12 +12,32 @@ To install dependencies:
 npm install
 ```
 
+Useful commands:
+
+```bash
+npm start -- --path examples/simple.draw --width 10 --height 5
+npm test
+npm run typecheck
+```
+
+## Project Structure
+
+```text
+src/
+  cli/      CLI argument parsing and program entrypoint
+  draw/     .draw language tokens, lexer, parser, and parse errors
+  render/   Canvas state, movement rules, and output rendering
+  shared/   Small generic helpers
+examples/   Runnable .draw programs
+test/       Tests and fixtures
+```
+
 ## CLI
 
 Run a drawing file with Node's TypeScript transform flag:
 
 ```bash
-node --experimental-transform-types index.ts --path test_script.draw --width 10 --height 5
+npm start -- --path examples/simple.draw --width 10 --height 5
 ```
 
 Flags:
