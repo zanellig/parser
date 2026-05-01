@@ -1,0 +1,67 @@
+# Claude Code mascot at sub-pixel resolution on an 18x5 canvas.
+# Each half-block quadrant in the source becomes its own cell.
+#
+# Source (chars use quadrant blocks like _, |, /, \, full):
+#   ' ' is empty, full block is '##' filled.
+#
+#   row 0:  ' #/#####\# '
+#   row 1:  '\##########/'
+#   row 2:  '   ##  ##   '
+#
+# Painting starts bottom-left and walks upward, row by row.
+
+P 2
+
+# Row y=4 (feet): single cells at x=4, 6, 11, 13
+E 4
+D
+E 1
+U
+E 1
+D
+E 1
+U
+E 4
+D
+E 1
+U
+E 1
+D
+E 1
+U
+
+# Row y=3: solid bar x=3..14
+W 11
+N 1
+D
+E 12
+U
+
+# Row y=2: solid bar x=1..16
+W 14
+N 1
+D
+E 16
+U
+
+# Row y=1: x=3..4, gap at 5, x=6..11, gap at 12, x=13..14
+W 14
+N 1
+D
+E 2
+U
+E 1
+D
+E 6
+U
+E 1
+D
+E 2
+U
+
+# Row y=0: solid bar x=3..14
+W 12
+N 1
+D
+E 12
+U
