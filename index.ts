@@ -1,8 +1,8 @@
 import fs from "fs"
 import path from "path"
 
-class InvalidParameterError extends Error {}
-class RequiredPathFlagError extends Error {}
+class InvalidParameterError extends Error { }
+class RequiredPathFlagError extends Error { }
 
 type UnknownFlag = {
     flagName: string
@@ -38,15 +38,15 @@ type ParsedFlag = KnownFlag | UnknownFlag
  * Just for shits and giggles
  */
 class ArgumentReader {
-    #parsed:  Array<ParsedFlag> = []
+    #parsed: Array<ParsedFlag> = []
     #ignored: Array<ParsedFlag> = []
     #executablePath = ""
     #scriptPath = ""
 
-    constructor (argv: Array<string>) {
+    constructor(argv: Array<string>) {
         for (let argi = 0; argi < argv.length; argi++) {
             const arg = argv[argi]
-            
+
             if (argi === 0) {
                 this.#executablePath = argv[argi]
                 continue
@@ -57,7 +57,7 @@ class ArgumentReader {
             }
 
             if (arg.startsWith("--") || arg.startsWith("-")) {
-                const flag = this.#parseFlag(arg, argv[argi+1])
+                const flag = this.#parseFlag(arg, argv[argi + 1])
                 if (this.#parsed.some((v) => v.flagName === flag.flagName)) {
                     this.#ignored.push(flag)
                     continue
@@ -111,66 +111,73 @@ class ArgumentReader {
                     flagName: flag.replaceAll("-", ""),
                     acceptsParam: false,
                 }
-            }
         }
+    }
 
     get<T extends FlagName>(arg: T): FlagByName[T] | undefined {
         return this.#parsed.find((v): v is FlagByName[T] => v.flagName === arg)
     }
 }
 
-class ParsingError extends Error {}
-class InvalidActionParameterError extends ParsingError {}
-class InvalidActionSyntaxError extends ParsingError {}
-class UnknownActionError extends ParsingError {}
-class UnexpectedActionParameterError extends ParsingError {}
+class ParsingError extends Error { }
+class InvalidActionParameterError extends ParsingError { }
+class InvalidActionSyntaxError extends ParsingError { }
+class UnknownActionError extends ParsingError { }
+class UnexpectedActionParameterError extends ParsingError { }
 
-interface BaseAction extends Object {
-    actionName: string
-}
+const ActionTokens = {
+    selectPen: "P",
+    penDown: "D",
+    moveNorth: "N",
+    moveSouth: "S",
+    moveEast: "E",
+    moveWest: "W",
+    penUp: "U",
+} as const
 
-interface RepeateableAction extends BaseAction {
-    reps: number
-}
+type ActionToken = typeof ActionTokens[keyof typeof ActionTokens]
 
-interface ParameterizableAction extends BaseAction {
+const ActionNames = {
+    selectPen: "select_pen",
+    penDown: "pen_down",
+    moveNorth: "move_north",
+    moveSouth: "move_south",
+    moveEast: "move_east",
+    moveWest: "move_west",
+    penUp: "pen_up",
+} as const
+
+type ActionName = typeof ActionNames[keyof typeof ActionNames]
+
+const ActionNameByToken = {
+    [ActionTokens.selectPen]: ActionNames.selectPen,
+    [ActionTokens.penDown]: ActionNames.penDown,
+    [ActionTokens.moveNorth]: ActionNames.moveNorth,
+    [ActionTokens.moveSouth]: ActionNames.moveSouth,
+    [ActionTokens.moveEast]: ActionNames.moveEast,
+    [ActionTokens.moveWest]: ActionNames.moveWest,
+    [ActionTokens.penUp]: ActionNames.penUp,
+} as const satisfies Record<ActionToken, ActionName>
+
+type SelectPenAction = {
+    actionName: typeof ActionNames.selectPen
     param: number
 }
 
-class ParameterizableAction implements ParameterizableAction {}
-
-type Action = BaseAction | ParameterizableAction | RepeateableAction
-
-// type Actions = {
-//     "P":    ParameterizableAction
-//     "D":    Action
-//     "N":    RepeateableAction
-//     "S":    RepeateableAction
-//     "E":    RepeateableAction
-//     "W":    RepeateableAction
-//     "U":    Action
-// }
-
-/* Enums in TypeScript are BULLSHIT and I hate them :) */
-enum TokenActions {
-    "select_pen"    = "P",
-    "pen_down"      = "D",
-    "move_north"    = "N",
-    "move_south"    = "S",
-    "move_east"     = "E",
-    "move_west"     = "W",
-    "pen_up"        = "U",
+type PenStateAction = {
+    actionName: typeof ActionNames.penDown | typeof ActionNames.penUp
 }
 
-enum HumanReadableActions {
-    "P" = "select_pen",
-    "D" = "pen_down",
-    "N" = "move_north",
-    "S" = "move_south",
-    "E" = "move_east",
-    "W" = "move_west",
-    "U" = "pen_up",
+type MoveAction = {
+    actionName:
+    | typeof ActionNames.moveNorth
+    | typeof ActionNames.moveSouth
+    | typeof ActionNames.moveEast
+    | typeof ActionNames.moveWest
+    reps: number
 }
+
+type Action = SelectPenAction | PenStateAction | MoveAction
 
 type LexicalTokenType = "ACTION" | "NUMBER" | "UNKNOWN"
 
@@ -184,13 +191,13 @@ type LexicalToken = {
 class Lexer {
     #tokens: Array<LexicalToken> = []
     #validActions = new Set<string>([
-        TokenActions.select_pen,
-        TokenActions.pen_down,
-        TokenActions.move_north,
-        TokenActions.move_south,
-        TokenActions.move_east,
-        TokenActions.move_west,
-        TokenActions.pen_up
+        ActionTokens.selectPen,
+        ActionTokens.penDown,
+        ActionTokens.moveNorth,
+        ActionTokens.moveSouth,
+        ActionTokens.moveEast,
+        ActionTokens.moveWest,
+        ActionTokens.penUp
     ])
 
     constructor(lines: Array<string>) {
@@ -320,21 +327,21 @@ class ActionParser {
     #mapAction(actionToken: LexicalToken, parameterToken: LexicalToken | undefined): Action {
         const action = actionToken.value
         switch (action) {
-            case "P":
+            case ActionTokens.selectPen:
                 const param = this.#readNumberParameter(actionToken, parameterToken)
-                return { actionName: action, param }
-            case "D":
-            case "U":
+                return { actionName: ActionNameByToken[action], param }
+            case ActionTokens.penDown:
+            case ActionTokens.penUp:
                 if (parameterToken) {
                     throw new UnexpectedActionParameterError(this.#formatTokenError(parameterToken, `Action "${action}" does not accept parameters`))
                 }
-                return { actionName: action }
-            case "N":
-            case "S":
-            case "E":
-            case "W":
+                return { actionName: ActionNameByToken[action] }
+            case ActionTokens.moveNorth:
+            case ActionTokens.moveSouth:
+            case ActionTokens.moveEast:
+            case ActionTokens.moveWest:
                 const reps = this.#readNumberParameter(actionToken, parameterToken)
-                return { actionName: action, reps }
+                return { actionName: ActionNameByToken[action], reps }
             default:
                 throw new UnknownActionError(this.#formatTokenError(actionToken, "Expected a valid action token"))
         }
@@ -363,8 +370,8 @@ class ActionParser {
     }
 }
 
-class InvalidActionSequenceError extends Error {}
-class InvalidRequestedDimensionsError extends InvalidParameterError {}
+class InvalidActionSequenceError extends Error { }
+class InvalidRequestedDimensionsError extends InvalidParameterError { }
 
 interface Coords2D {
     x: number,
@@ -372,20 +379,26 @@ interface Coords2D {
 }
 
 interface Dimensions {
-    width:  number,
+    width: number,
     height: number,
 }
 
 type CanvasState = Array<Array<number>>
 
+const PIXELS = ["░░", "▓▓", "██"] as const
+
 class CanvasController {
     static #instance: CanvasController | null = null
-    #penCoords: Coords2D    =   { x: 0, y: 0 }
-    #canvas:    CanvasState =   []
-    #dims:      Dimensions  =   { width: 0, height: 0 }
+    #canvas: CanvasState = []
+    #dims: Dimensions = { width: 0, height: 0 }
+    // this could be a linked list but meh
+    #actionHistory: Action[] = []
+    #penCoords: Coords2D = { x: 0, y: 0 }
+    #penDown = false
+    #penType = 1
 
-    private constructor() {}
-    
+    private constructor() { }
+
     static getInstance() {
         if (CanvasController.#instance === null) {
             CanvasController.#instance = new CanvasController()
@@ -393,6 +406,10 @@ class CanvasController {
 
         return CanvasController.#instance
     }
+
+    /**
+     * @throws { InvalidRequestedDimensionsError }
+     */
     requestCanvas(dimensions: Partial<Dimensions>) {
         const width = Number(dimensions.width ?? dimensions.height)
         const height = Number(dimensions.height ?? dimensions.width)
@@ -407,8 +424,9 @@ class CanvasController {
             `)
             throw new InvalidRequestedDimensionsError(`Requested dimensions "width = ${width}" and "height = ${height}" are invalid.`)
         }
-        this.#dims.width    = width
-        this.#dims.height   = height
+        this.#dims.width = width
+        this.#dims.height = height
+        this.#penCoords = { x: 0, y: height - 1 }
         this.#populateCanvas()
     }
 
@@ -424,15 +442,79 @@ class CanvasController {
         return this.#canvas
     }
     /** @throws { InvalidActionSequence } */
-    perform(actions: Action[]) {}
-    performSingle(action: Action) {}
-    paint() {
-        const pixels = ["░░", "▓▓", "██"]
+    perform(actions: Action[]) {
+        for (const action of actions) {
+            this.#performSingle(action)
+        }
+    }
+    #performSingle(action: Action) {
+        switch (action.actionName) {
+            case ActionNames.selectPen:
+                if (action.param < 0 || action.param > PIXELS.length - 1) {
+                    throw new InvalidActionParameterError(`
+                    The selected pen is not available. Try with the following:
+                    ${PIXELS.map((v, i) => ` ${i} => ${v}`)}
+                    `)
+                }
+                if (this.#penDown) {
+                    throw new InvalidActionSequenceError("Pen must be lifted before changing its type.")
+                }
+                this.#penType = action.param
+                this.#saveAction(action)
+                return
+            case ActionNames.penDown:
+                this.#penDown = true
+                this.#saveAction(action)
+                return
+            case ActionNames.penUp:
+                this.#penDown = false
+                this.#saveAction(action)
+                return
+            case ActionNames.moveNorth:
+                this.#move(0, -1, action.reps)
+                this.#saveAction(action)
+                return
+            case ActionNames.moveSouth:
+                this.#move(0, 1, action.reps)
+                this.#saveAction(action)
+                return
+            case ActionNames.moveEast:
+                this.#move(1, 0, action.reps)
+                this.#saveAction(action)
+                return
+            case ActionNames.moveWest:
+                this.#move(-1, 0, action.reps)
+                this.#saveAction(action)
+                return
+            default:
+                assertNever(action)
+        }
+    }
+    #move(dx: number, dy: number, reps: number) {
+        const maxX = Math.max(0, this.#dims.width - 1)
+        const maxY = Math.max(0, this.#dims.height - 1)
 
-        for(const row of this.#canvas) {
+        for (let step = 0; step < reps; step++) {
+            if (this.#penDown) {
+                const row = this.#canvas[this.#penCoords.y]
+                if (row) row[this.#penCoords.x] = this.#penType
+            }
+
+            this.#penCoords.x = clamp(this.#penCoords.x + dx, 0, maxX)
+            this.#penCoords.y = clamp(this.#penCoords.y + dy, 0, maxY)
+        }
+    }
+    #saveAction(action: Action) {
+        if (this.#actionHistory.length > 9) {
+            this.#actionHistory.shift()
+        }
+        this.#actionHistory.push(action)
+    }
+    paint() {
+        for (const row of this.#canvas) {
             let line = ""
             for (const col of row) {
-                line += pixels[col] ?? "??"
+                line += PIXELS[col] ?? "??"
             }
             console.log(line)
         }
@@ -448,13 +530,21 @@ function checkValidPositiveNumberParameter(np: number) {
 
 function isValidPositiveInteger(np: number) {
     return (
-        Boolean(np) && 
-        !Number.isNaN(np) && 
-        Number.isFinite(np) && 
+        Boolean(np) &&
+        !Number.isNaN(np) &&
+        Number.isFinite(np) &&
         Number.isSafeInteger(np) &&
         Number.isInteger(np) &&
         np > 0
     )
+}
+
+function clamp(value: number, min: number, max: number) {
+    return Math.min(Math.max(value, min), max)
+}
+
+function assertNever(value: never): never {
+    throw new Error(`Unhandled action: ${JSON.stringify(value)}`)
 }
 
 async function main() {
@@ -474,13 +564,14 @@ async function main() {
 
     const actionParser = new ActionParser(lines)
     const actions = actionParser.actions
-    // TODO: aca tendria que implementar un CanvasController o algo asi
+
     const canvas = CanvasController.getInstance()
     const requestedDimensions = {
         width: args.get("width")?.param,
         height: args.get("height")?.param
     }
     canvas.requestCanvas(requestedDimensions)
+    canvas.perform(actions)
     canvas.paint()
 }
 
