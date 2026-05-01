@@ -1,0 +1,62 @@
+# Crab-like creature on an 18x6 canvas.
+# This expands each original block glyph into a 2x2 bitmap so half-blocks and
+# quadrant corners are represented with actual drawn cells.
+# Render with:
+# npm start -- --path examples/crab.draw --width 18 --height 6
+
+P 2
+
+# Row 4: feet from the original bottom-row quadrant glyphs.
+N 1
+E 4
+D
+E 1
+U
+E 1
+D
+E 1
+U
+E 4
+D
+E 1
+U
+E 1
+D
+E 1
+U
+
+# Row 3: lower body.
+N 1
+W 11
+D
+E 12
+U
+
+# Row 2: widest body row.
+N 1
+W 14
+D
+E 16
+U
+
+# Row 1: underside of the top-row half and corner blocks.
+N 1
+W 14
+D
+E 2
+U
+E 1
+D
+E 6
+U
+E 1
+D
+E 2
+U
+
+# Row 0: top shell.
+N 1
+W 12
+D
+E 12
+U
