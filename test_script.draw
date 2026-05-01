@@ -5,3 +5,11 @@ N 1		# then north 1
 E 2		# then east 2
 S 1		# then back south
 U		# pen up
+
+  2     # invalid action
+ E 2    # valid action, bad syntax
+P 1
+D
+N 2     # comment
+U N     # invalid parameter type
+D 2     # action does not accept number paramater
