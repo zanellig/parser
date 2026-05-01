@@ -219,7 +219,6 @@ class ActionParser {
         ) throw new InvalidActionParameterError
     }
 
-    /** Este getter es al pedo por ahora, pero bueno */
     get actions() {
         return this.#actions
     }
