@@ -4,7 +4,7 @@ Minimal parser and renderer for `.draw` files.
 
 Core code was written by hand.
 
-Help from GPT-5.5 was used on the lexer, refactoring into an extendable structure, and writing these docs!
+Help from GPT-5.5 was used on the lexer, refactoring into an extendable structure, and writing these docs.
 
 To install dependencies:
 
