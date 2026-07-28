@@ -9,15 +9,15 @@ Help from GPT-5.5 was used on the lexer, refactoring into an extendable structur
 To install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 Useful commands:
 
 ```bash
-npm start -- --path examples/simple.draw --width 10 --height 5
-npm test
-npm run typecheck
+pnpm start -- --path examples/simple.draw --width 10 --height 5
+pnpm test
+pnpm run typecheck
 ```
 
 ## Project Structure
@@ -34,10 +34,10 @@ test/       Tests and fixtures
 
 ## CLI
 
-Run a drawing file with Node's TypeScript transform flag:
+Run a drawing file with Node's native TypeScript support:
 
 ```bash
-npm start -- --path examples/simple.draw --width 10 --height 5
+pnpm start -- --path examples/simple.draw --width 10 --height 5
 ```
 
 Flags:
