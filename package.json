@@ -7,9 +7,13 @@
 	"type": "module",
 	"main": "./src/index.ts",
 	"module": "./src/index.ts",
+	"packageManager": "pnpm@11.15.1",
+	"engines": {
+		"node": ">=26.5.0"
+	},
 	"scripts": {
-		"start": "node --experimental-transform-types src/cli/main.ts",
-		"test": "node --test --experimental-transform-types test/*.test.ts",
+		"start": "node src/cli/main.ts",
+		"test": "node --test test/*.test.ts",
 		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {
